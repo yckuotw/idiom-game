@@ -1,10 +1,7 @@
 import streamlit as st
-import pandas as pd
-import json
-from pathlib import Path
 
-# 預設題庫（作為備用）
-DEFAULT_IDIOMS_DATA = {
+# 題庫資料
+IDIOMS_DATA = {
     "categories": [
         {
             "name": "預見類",
@@ -18,41 +15,23 @@ DEFAULT_IDIOMS_DATA = {
                     "explanation": "「月暈而風」預示天氣變化,「見微知著」是從小察覺大事,都有預見未來之意"
                 }
             ]
+        },
+        {
+            "name": "勤奮類",
+            "questions": [
+                {
+                    "id": "2",
+                    "idiom": "孜孜不倦",
+                    "meaning": "形容勤奮不懈的學習態度",
+                    "options": ["廢寢忘食", "得過且過", "安步當車", "按部就班", "夜以繼日", "優柔寡斷"],
+                    "answers": ["廢寢忘食", "夜以繼日"],
+                    "explanation": "「廢寢忘食」和「夜以繼日」都形容專心致志、勤奮不懈的態度"
+                }
+            ]
         }
+        # ... 可以繼續加入更多類別和題目
     ]
 }
-
-def load_idioms_from_csv():
-    """從 CSV 載入題庫"""
-    try:
-        df = pd.read_csv('idioms.csv')
-        categories = {}
-        
-        for _, row in df.iterrows():
-            category = row['category']
-            if category not in categories:
-                categories[category] = []
-                
-            # 將字串形式的列表轉換為實際的列表
-            options = eval(row['options'])
-            answers = eval(row['answers'])
-            
-            question = {
-                'id': str(row['id']),
-                'idiom': row['idiom'],
-                'meaning': row['meaning'],
-                'options': options,
-                'answers': answers,
-                'explanation': row['explanation']
-            }
-            categories[category].append(question)
-        
-        return {'categories': [
-            {'name': k, 'questions': v} for k, v in categories.items()
-        ]}
-    except Exception as e:
-        st.error(f"載入題庫時發生錯誤: {str(e)}")
-        return DEFAULT_IDIOMS_DATA
 
 def init_session_state():
     """初始化 session state"""
@@ -81,14 +60,11 @@ def reset_game():
 def main():
     st.title('成語配對遊戲')
     
-    # 載入題庫
-    idioms_data = load_idioms_from_csv()
-    
     # 初始化遊戲狀態
     init_session_state()
     
     # 側邊欄顯示類別選擇
-    categories = [cat['name'] for cat in idioms_data['categories']]
+    categories = [cat['name'] for cat in IDIOMS_DATA['categories']]
     selected_category = st.sidebar.selectbox(
         '選擇類別',
         categories,
@@ -99,7 +75,7 @@ def main():
     st.session_state.category_index = categories.index(selected_category)
     
     # 取得當前類別的題目
-    current_category = idioms_data['categories'][st.session_state.category_index]
+    current_category = IDIOMS_DATA['categories'][st.session_state.category_index]
     current_questions = current_category['questions']
     
     # 如果切換類別，重置問題索引
